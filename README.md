@@ -9,3 +9,12 @@ implementation("io.github.joreilly:peopleinspace-lib:0.4.0")
 ```
 
 Can then create instane of `PeopleInSpaceApi` and then call `fetchPeople()` or `fetchISSPosition()`
+
+
+Supports following platforms
+- Android
+- iOS
+- watchOS
+- macOS
+- JS
+- JVM
