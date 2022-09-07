@@ -5,7 +5,7 @@ Kotlin Multiplatform library that provides API to retrieve list of people in spa
 Add following to `commonMain`
 
 ```
-implementation("io.github.joreilly:peopleinspace-lib:0.4.0")
+implementation("io.github.joreilly:peopleinspace-lib:0.5.2")
 ```
 
 Can then create instane of `PeopleInSpaceApi` and then call `fetchPeople()` or `fetchISSPosition()`
@@ -14,7 +14,6 @@ Can then create instane of `PeopleInSpaceApi` and then call `fetchPeople()` or `
 Supports following platforms
 - Android
 - iOS
-- watchOS
 - macOS
 - JS
 - JVM

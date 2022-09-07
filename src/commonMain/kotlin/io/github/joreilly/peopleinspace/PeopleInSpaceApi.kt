@@ -1,10 +1,11 @@
 package io.github.joreilly.peopleinspace
 
 import io.ktor.client.*
-import io.ktor.client.features.json.*
-import io.ktor.client.features.json.serializer.*
-import io.ktor.client.features.logging.*
+import io.ktor.client.call.*
+import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.plugins.logging.*
 import io.ktor.client.request.*
+import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
@@ -12,7 +13,7 @@ import kotlinx.serialization.json.Json
 data class AstroResult(val message: String, val number: Int, val people: List<Assignment>)
 
 @Serializable
-data class Assignment(val craft: String, val name: String)
+data class Assignment(val craft: String, val name: String, var personImageUrl: String? = "", var personBio: String? = "")
 
 @Serializable
 data class IssPosition(val latitude: Double, val longitude: Double)
@@ -21,13 +22,13 @@ data class IssPosition(val latitude: Double, val longitude: Double)
 data class IssResponse(val message: String, val iss_position: IssPosition, val timestamp: Long)
 
 
-class PeopleInSpaceApi(private val baseUrl: String = "http://api.open-notify.org")  {
+class PeopleInSpaceApi(private val baseUrl: String = "https://people-in-space-proxy.ew.r.appspot.com")  {
 
     private val json = Json { isLenient = true; ignoreUnknownKeys = true }
 
     private val client = HttpClient {
-        install(JsonFeature) {
-            serializer = KotlinxSerializer(json)
+        install(ContentNegotiation) {
+            json(json)
         }
         install(Logging) {
             logger = Logger.DEFAULT
@@ -35,6 +36,6 @@ class PeopleInSpaceApi(private val baseUrl: String = "http://api.open-notify.org
         }
     }
 
-    suspend fun fetchPeople() = client.get<AstroResult>("$baseUrl/astros.json")
-    suspend fun fetchISSPosition() = client.get<IssResponse>("$baseUrl/iss-now.json")
+    suspend fun fetchPeople() = client.get("$baseUrl/astros.json").body<AstroResult>()
+    suspend fun fetchISSPosition() = client.get("$baseUrl/iss-now.json").body<IssResponse>()
 }
