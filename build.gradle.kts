@@ -1,17 +1,16 @@
 plugins {
     kotlin("multiplatform") version Versions.kotlin
-    id("kotlinx-serialization") version Versions.kotlin
+    id("org.jetbrains.kotlin.plugin.serialization") version Versions.kotlin
     id("com.android.library")
     id("convention.publication")
 }
 
 group = "io.github.joreilly"
-version = "0.4.0"
+version = "0.5.2"
 
 repositories {
     google()
     mavenCentral()
-    jcenter()
 }
 
 
@@ -21,16 +20,9 @@ kotlin {
         publishAllLibraryVariants()
     }
     jvm()
-    ios()
-
-    val sdkName: String? = System.getenv("SDK_NAME")
-    val isWatchOSDevice = sdkName.orEmpty().startsWith("watchos")
-    if (isWatchOSDevice) {
-        watchosArm64("watch")
-    } else {
-        watchosX86("watch")
-    }
-
+    iosArm64()
+    iosSimulatorArm64()
+    iosX64()
     macosX64("macos")
 
     js {
@@ -42,10 +34,13 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 // Ktor
-                implementation(Ktor.clientCore)
-                implementation(Ktor.clientJson)
-                implementation(Ktor.clientLogging)
-                implementation(Ktor.clientSerialization)
+                with(Ktor) {
+                    implementation(clientCore)
+                    implementation(clientJson)
+                    implementation(clientLogging)
+                    implementation(contentNegotiation)
+                    implementation(json)
+                }
 
                 // Kotlinx Serialization
                 implementation(Serialization.core)
@@ -64,17 +59,19 @@ kotlin {
             }
         }
 
-        val iosMain by getting {
+
+        val iosX64Main by getting
+        val iosArm64Main by getting
+        val iosSimulatorArm64Main by getting
+        val iosMain by creating {
+            dependsOn(commonMain)
+            iosX64Main.dependsOn(this)
+            iosArm64Main.dependsOn(this)
+            iosSimulatorArm64Main.dependsOn(this)
             dependencies {
                 implementation(Ktor.clientIos)
             }
         }
-
-//        val watchosMain by getting {
-//            dependencies {
-//                implementation(Ktor.clientIos)
-//            }
-//        }
 
         val macosMain by getting {
             dependencies {
@@ -92,10 +89,22 @@ kotlin {
 }
 
 
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+}
+
+
 android {
-    compileSdkVersion(29)
+    compileSdkVersion(32)
     defaultConfig {
         minSdkVersion(21)
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
     }
 
     val main by sourceSets.getting {
